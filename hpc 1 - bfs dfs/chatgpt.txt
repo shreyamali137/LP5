@@ -1,0 +1,405 @@
+Absolutely, Shreya! Let’s break this code down **line by line** and explain it from the ground up like you're learning it for the first time. This program is about **graph traversal** using both **sequential (normal)** and **parallel (multi-threaded)** methods using **OpenMP**, which is a library in C++ used to run tasks in parallel to speed up performance.
+
+---
+
+### 📌 **Header Files**
+
+```cpp
+#include <bits/stdc++.h>
+#include <omp.h>
+```
+
+* `#include <bits/stdc++.h>`: Includes **almost all standard C++ libraries** (e.g., iostream, vector, queue, etc.).
+* `#include <omp.h>`: Includes the **OpenMP library**, which allows **parallel programming** using multiple threads.
+
+---
+
+### 📌 **Graph Class Declaration**
+
+```cpp
+class Graph
+{
+    int V;                       // Number of vertices
+    vector<vector<int>> adj;     // Adjacency list
+```
+
+* `int V`: Number of vertices (or nodes) in the graph.
+* `vector<vector<int>> adj`: This is an **adjacency list** — a list where each element contains a list of nodes it's connected to. A graph is made of **edges**, and this structure stores them.
+
+---
+
+### 📌 **Constructor**
+
+```cpp
+Graph(int V)
+{
+    this->V = V;
+    adj.resize(V);
+}
+```
+
+* A **constructor** is a function that runs when an object is created.
+* It initializes `V` with the number of vertices and **resizes** the `adj` list so it can hold V nodes.
+
+---
+
+### 📌 **Add Edge Function**
+
+```cpp
+void addEdge(int u, int v)
+{
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+}
+```
+
+* This function **adds an edge** between vertex `u` and vertex `v`.
+* Since it’s an **undirected graph**, both directions are added (`u->v` and `v->u`).
+
+---
+
+## 🔍 Traversal Methods
+
+### 📌 Sequential BFS (Breadth-First Search)
+
+```cpp
+void sequentialBFS(int source)
+{
+    vector<bool> visited(adj.size(), false);
+    queue<int> q;
+    visited[source] = true;
+    q.push(source);
+```
+
+* BFS visits all neighbors of a node before moving deeper.
+* `visited[]`: Tracks which nodes have already been visited to avoid cycles.
+* `queue`: Helps BFS explore neighbors **level by level**.
+
+```cpp
+    while (!q.empty())
+    {
+        int u = q.front();
+        q.pop();
+        cout << u << " ";
+```
+
+* While there are nodes in the queue, keep processing.
+* Take the **front node** out and print it.
+
+```cpp
+        for (int i = 0; i < adj[u].size(); ++i)
+        {
+            int v = adj[u][i];
+            if (!visited[v])
+            {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}
+```
+
+* For each neighbor `v` of node `u`, if not visited:
+
+  * Mark it as visited and add it to the queue.
+
+---
+
+### 📌 Sequential DFS (Depth-First Search)
+
+```cpp
+void sequentialDFSUtil(int v, vector<bool> &visited)
+{
+    visited[v] = true;
+    cout << v << " ";
+```
+
+* Mark node `v` as visited and print it.
+
+```cpp
+    for (int i = 0; i < adj[v].size(); ++i)
+    {
+        int u = adj[v][i];
+        if (!visited[u])
+        {
+            sequentialDFSUtil(u, visited);
+        }
+    }
+}
+```
+
+* Go to each unvisited neighbor **recursively** — this is the key idea of DFS.
+
+```cpp
+void sequentialDFS(int source)
+{
+    vector<bool> visited(V, false);
+    sequentialDFSUtil(source, visited);
+}
+```
+
+* This is a wrapper that starts DFS from the `source` node.
+
+---
+
+## ⚡ Parallel Versions
+
+### 📌 Parallel BFS
+
+```cpp
+void parallelBFS(int source)
+{
+    vector<bool> visited(adj.size(), false);
+    queue<int> q;
+    visited[source] = true;
+    q.push(source);
+```
+
+Same start as sequential. The difference begins inside the loop.
+
+```cpp
+    while (!q.empty())
+    {
+        int u;
+        #pragma omp parallel shared(q, visited)
+        {
+            #pragma omp single
+            {
+                u = q.front();
+                q.pop();
+                cout << u << " ";
+            }
+```
+
+* Start a **parallel region**.
+* `#pragma omp single`: Only one thread will extract the front node. This avoids race conditions (conflicts between threads).
+
+```cpp
+            if (!(adj[u].size() == 0))
+            {
+                #pragma omp for
+                for (int i = 0; i <= adj[u].size() - 1; ++i)
+                {
+                    if (!visited[adj[u][i]])
+                    {
+                        #pragma omp critical
+                        {
+                            q.push(adj[u][i]);
+                            visited[adj[u][i]] = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+* `#pragma omp for`: Divide the neighbors among threads.
+* `#pragma omp critical`: Only one thread modifies the `queue` and `visited[]` at a time — needed to avoid conflicts.
+
+🟨 **Why Parallel BFS?** It allows multiple neighbors to be processed **simultaneously**, potentially speeding things up for big graphs.
+
+---
+
+### 📌 Parallel DFS
+
+```cpp
+void parallelDFSUtil(int v, vector<bool> &visited)
+{
+    visited[v] = true;
+    cout << v << " ";
+```
+
+Same start as sequential. But now we use OpenMP:
+
+```cpp
+    #pragma omp parallel for
+    for (int i = 0; i < adj[v].size(); ++i)
+    {
+        int u = adj[v][i];
+        if (!visited[u])
+        {
+            parallelDFSUtil(u, visited);
+        }
+    }
+}
+```
+
+* `#pragma omp parallel for`: Tries to explore multiple neighbors **concurrently**.
+* **Note**: DFS is not ideal for parallelism because of its **recursive and sequential nature**, but we still attempt it.
+
+```cpp
+void parallelDFS(int source)
+{
+    vector<bool> visited(V, false);
+    parallelDFSUtil(source, visited);
+}
+```
+
+---
+
+## 🧪 Main Function
+
+```cpp
+int main()
+{
+    omp_set_num_threads(4);
+```
+
+* Sets OpenMP to use **4 threads**.
+
+```cpp
+    int num_vertices, num_edges, source;
+    cout << "Enter the number of vertices in the graph: ";
+    cin >> num_vertices;
+    Graph g(num_vertices);
+```
+
+* Take number of vertices from the user and create a graph.
+
+```cpp
+    cout << "Enter the number of edges in the graph: ";
+    cin >> num_edges;
+```
+
+* Input total edges to be added.
+
+```cpp
+    cout << "Enter the edges (u v): " << endl;
+    for (int i = 0; i < num_edges; ++i)
+    {
+        int u, v;
+        cin >> u >> v;
+        g.addEdge(u, v);
+    }
+```
+
+* Input each edge and add it to the graph.
+
+```cpp
+    cout << "Enter the starting vertex for BFS and DFS: ";
+    cin >> source;
+```
+
+* Input the starting vertex for traversal.
+
+---
+
+### ⏱ Timing Each Traversal
+
+Each traversal (BFS/DFS, sequential/parallel) is timed:
+
+```cpp
+    double start = omp_get_wtime();
+    ...
+    double stop = omp_get_wtime();
+    double duration = stop - start;
+```
+
+* Measures time taken in microseconds using OpenMP’s `omp_get_wtime()`.
+
+---
+
+## 🔚 Output
+
+You’ll see the output of:
+
+* Sequential BFS and DFS with their time.
+* Parallel BFS and DFS with their time.
+* This helps compare which one is faster and how threading helps.
+
+---
+
+### ✅ Summary of Concepts:
+
+| Concept    | Meaning                                                             |
+| ---------- | ------------------------------------------------------------------- |
+| Graph      | Structure made of nodes (vertices) and connections (edges)          |
+| BFS        | Breadth-first search (level-by-level traversal)                     |
+| DFS        | Depth-first search (go deep before next branch)                     |
+| Sequential | Single-threaded, slower but simpler                                 |
+| Parallel   | Multi-threaded using OpenMP, faster on big graphs                   |
+| OpenMP     | A library for running C++ code in parallel using multiple CPU cores |
+
+---
+
+Would you like a diagram showing how BFS and DFS work visually?
+
+
+***differnece between parallel and sequesntial bfs dfs
+
+Sure Shreya! Let’s break down the **difference between sequential and parallel BFS/DFS** in simple terms:
+
+---
+
+## 🌳 What Are BFS and DFS?
+
+* **BFS (Breadth-First Search):**
+  Explore the graph **level by level** starting from the source.
+  Think of it like throwing a stone in water — the ripples go outward level-by-level.
+
+* **DFS (Depth-First Search):**
+  Explore the graph by going **as deep as possible** before backtracking.
+  Think of it like going down a maze path all the way before checking another.
+
+---
+
+## 🚶 Sequential vs 🔀 Parallel — What's the Difference?
+
+| Feature                  | Sequential BFS/DFS                  | Parallel BFS/DFS                                                          |
+| ------------------------ | ----------------------------------- | ------------------------------------------------------------------------- |
+| **Execution**            | Uses **1 thread only**              | Uses **multiple threads** (via OpenMP)                                    |
+| **Speed**                | Slower for large graphs             | Can be faster because multiple parts of the graph are explored at once    |
+| **Code Simplicity**      | Easier to write and debug           | More complex due to need for thread safety (e.g., `#pragma omp`)          |
+| **Visited array**        | Only one thread changes it          | Multiple threads must **safely update** it (use `critical` or atomic ops) |
+| **Queue/Stack handling** | No synchronization issues           | Needs **careful handling** to avoid race conditions                       |
+| **Use Case**             | Good for small or less dense graphs | Good for **large, dense** graphs with many nodes                          |
+
+---
+
+## 🎯 Example from Your Code
+
+### BFS
+
+* **Sequential BFS**:
+
+  * Explores one level at a time using a queue.
+  * One thread pops nodes and pushes their neighbors.
+
+* **Parallel BFS**:
+
+  * Still uses a queue but now **multiple threads** try to explore neighbors **in parallel**.
+  * It uses OpenMP directives like `#pragma omp for` and `#pragma omp critical` to share work and avoid conflicts.
+
+### DFS
+
+* **Sequential DFS**:
+
+  * A simple recursive function explores deep paths one at a time.
+
+* **Parallel DFS**:
+
+  * Each call to explore neighbors can be **given to a different thread** using `#pragma omp parallel for`.
+
+---
+
+## ⚠️ Why Not Always Use Parallel?
+
+* For **small graphs**, parallelism may actually slow things down (thread overhead).
+* Parallel code is **harder to debug** due to race conditions.
+* Synchronization like `#pragma omp critical` can reduce the benefits if overused.
+
+---
+
+## 🧠 Summary
+
+* **Sequential = simple, slower**
+* **Parallel = faster (on big graphs), complex**
+* Use **OpenMP** to run multiple parts of BFS/DFS **at the same time**.
+
+Would you like a visual diagram of how BFS/DFS works in parallel vs sequential?
+
+
+

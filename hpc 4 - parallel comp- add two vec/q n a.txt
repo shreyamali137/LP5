@@ -1,0 +1,149 @@
+Here are **potential questions and answers** for your matrix multiplication assignment using CUDA. These questions cover basic, intermediate, and deeper understanding levels — suitable for viva, interviews, or written explanations.
+
+---
+
+## 🔹 **Basic Level Questions**
+
+### **Q1: What is the purpose of this assignment?**
+
+**A:** The assignment demonstrates matrix multiplication using both CPU (sequential) and GPU (parallel with CUDA), and compares their execution times.
+
+---
+
+### **Q2: What is CUDA?**
+
+**A:** CUDA (Compute Unified Device Architecture) is a parallel computing platform and programming model developed by NVIDIA that allows developers to use the GPU for general-purpose computing.
+
+---
+
+### **Q3: What are the inputs for the program?**
+
+**A:** The inputs are:
+
+* Number of rows and columns of the first matrix (M and N)
+* Number of columns of the second matrix (K)
+* Elements of both matrices A (M×N) and B (N×K)
+
+---
+
+### **Q4: What is the output of the program?**
+
+**A:** The program outputs:
+
+* Matrix A and B (input matrices)
+* Result of sequential multiplication (C = A × B)
+* Result of parallel (CUDA) multiplication
+* Execution time for both methods
+
+---
+
+### **Q5: What are blocks and threads in CUDA?**
+
+**A:** In CUDA:
+
+* **Threads** are the smallest unit of execution.
+* **Blocks** are groups of threads.
+* CUDA grids are composed of multiple blocks, and each block contains multiple threads.
+
+---
+
+## 🔹 **Intermediate Level Questions**
+
+### **Q6: Why do we use `cudaMemcpy`?**
+
+**A:** `cudaMemcpy` is used to transfer data between the host (CPU) and device (GPU). It ensures matrices A and B are copied to the GPU before kernel execution, and the result is copied back to the CPU after computation.
+
+---
+
+### **Q7: What does the kernel function `multiply<<<blocks, threads>>>` do?**
+
+**A:** It performs matrix multiplication in parallel on the GPU, where each thread computes one element of the result matrix.
+
+---
+
+### **Q8: What does `__global__` mean before the multiply function?**
+
+**A:** `__global__` is a CUDA keyword that declares a function as a kernel, meaning it will be executed on the GPU and can be called from the CPU.
+
+---
+
+### **Q9: How do you decide the number of threads and blocks?**
+
+**A:** The number of threads per block is usually a power of 2 (e.g., 16x16 = 256 threads). The number of blocks is calculated as `(size + threadsPerBlock - 1) / threadsPerBlock` to ensure full matrix coverage.
+
+---
+
+### **Q10: What are the benefits of using GPU for matrix multiplication?**
+
+**A:** GPU enables massive parallelism, which can significantly speed up operations like matrix multiplication, especially for large matrices.
+
+---
+
+## 🔹 **Advanced Level Questions**
+
+### **Q11: What is the time complexity of matrix multiplication in this program?**
+
+**A:** Both CPU and GPU implementations have a time complexity of **O(M × N × K)**, but the GPU can perform many operations in parallel, reducing real execution time.
+
+---
+
+### **Q12: What happens if the matrix size is not divisible evenly by the number of threads?**
+
+**A:** Extra threads may go out of bounds. The condition `if (row < M && col < K)` ensures that only valid threads process data, avoiding invalid memory access.
+
+---
+
+### **Q13: Why do we use `row * N + i` and `i * K + col` for accessing elements?**
+
+**A:** This converts 2D matrix indices into 1D array access, as CUDA does not support 2D arrays natively for global memory access.
+
+---
+
+### **Q14: What is `cudaMalloc` and why is it necessary?**
+
+**A:** `cudaMalloc` allocates memory on the device (GPU) to store matrices. It's necessary because CPU and GPU have separate memory spaces.
+
+---
+
+### **Q15: What happens if you forget `cudaFree` or `delete[]`?**
+
+**A:** It will result in memory leaks — memory that is allocated but never released, which could lead to performance issues or crashes in long-running applications.
+
+---
+
+## 🔹 **Code Understanding / Debugging Questions**
+
+### **Q16: What is the role of the `initialize()` function?**
+
+**A:** It takes user input and fills the matrices A and B.
+
+---
+
+### **Q17: What would happen if you did not check `if (row < M && col < K)` in the kernel?**
+
+**A:** Threads outside the matrix bounds would try to access invalid memory, which can crash the program or return incorrect results.
+
+---
+
+### **Q18: What does `sequentialMultiply` do?**
+
+**A:** It implements standard matrix multiplication on the CPU using nested loops.
+
+---
+
+### **Q19: Why do we calculate time using `chrono` library?**
+
+**A:** The `chrono` library provides precise time measurement in C++, allowing us to compare CPU and GPU execution times.
+
+---
+
+### **Q20: What’s the difference between `cudaMemcpyHostToDevice` and `cudaMemcpyDeviceToHost`?**
+
+**A:**
+
+* `cudaMemcpyHostToDevice`: Copies data from CPU (host) to GPU (device).
+* `cudaMemcpyDeviceToHost`: Copies data from GPU back to CPU after computation.
+
+---
+
+Would you like these compiled into a document or PDF?

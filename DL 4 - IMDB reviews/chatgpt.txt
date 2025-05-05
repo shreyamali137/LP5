@@ -1,0 +1,555 @@
+Thanks for sharing the file! I'll walk you through the code inside `ImdbReviews.ipynb` line by line, explaining **every term and concept** as if you're brand new to Python, machine learning, and Jupyter notebooks.
+
+Let me first open and read the contents of the notebook to analyze it.
+
+
+Great! Let's start going through the code **line by line**, as if you're learning everything from scratch. These are the first few cells in your Jupyter Notebook:
+
+---
+
+### 🟩 **Code Cell 1**
+
+```python
+import pandas as pd
+
+import numpy as np
+```
+
+#### 🔍 Line 1: `import pandas as pd`
+
+* **`import`**: A Python keyword that brings external libraries (packages/modules) into your program.
+* **`pandas`**: A very popular Python library used to work with **tabular data** (like Excel or CSV files). It helps you easily manipulate and analyze data.
+* **`as pd`**: This gives the library a **nickname** (`pd`) so you don't have to write `pandas` every time. It's just a shortcut.
+
+> Think of `pandas` like a spreadsheet tool inside Python.
+
+#### 🔍 Line 2: `import numpy as np`
+
+* **`numpy`**: Another important Python library that deals with **numbers and mathematical operations**, especially arrays.
+* **`as np`**: Again, gives it a shortcut name.
+
+> `numpy` is often used for behind-the-scenes number crunching.
+
+---
+
+### 🟩 **Code Cell 2**
+
+```python
+df = pd.read_csv('IMDB Dataset.csv')
+
+df.head()
+```
+
+#### 🔍 Line 1: `df = pd.read_csv('IMDB Dataset.csv')`
+
+* **`pd.read_csv(...)`**: A function from `pandas` that reads a CSV (Comma-Separated Values) file and loads it as a table into Python.
+* **`'IMDB Dataset.csv'`**: This is the file name. It's assumed to be in the same folder as the notebook.
+* **`df = ...`**: This saves the loaded data into a variable named `df`. This is short for **DataFrame**, which is a 2D table with rows and columns.
+
+> At this point, you've loaded a dataset of movie reviews from a file into memory.
+
+#### 🔍 Line 2: `df.head()`
+
+* **`df.head()`**: A method that shows the **first 5 rows** of the dataset. It's useful to quickly inspect what the data looks like.
+
+---
+
+### 🟩 **Code Cell 3**
+
+```python
+df.isnull().sum()
+```
+
+#### 🔍 `df.isnull()`
+
+* Checks **each cell** in the dataset to see if it's empty (or missing data). Returns `True` for missing, `False` otherwise.
+
+#### 🔍 `.sum()`
+
+* Sums up how many missing values are there in each column.
+
+> This line is checking if your dataset has any missing data.
+
+---
+
+Would you like me to continue explaining the next group of code cells in the same way?
+Perfect! Let’s go through the next 3 code cells line by line with full explanations. These lines introduce **data exploration** and the beginnings of **deep learning**.
+
+---
+
+### 🟩 **Code Cell 4**
+
+```python
+df.info()
+```
+
+#### 🔍 `df.info()`
+
+* This method gives you a **summary of the dataset**:
+
+  * Number of rows and columns
+  * Column names and data types (text, number, etc.)
+  * Whether any column has **missing values**
+* It’s often used to **understand the structure** of a dataset quickly.
+
+---
+
+### 🟩 **Code Cell 5**
+
+```python
+import matplotlib.pyplot as plt
+
+import seaborn as sns
+```
+
+#### 🔍 `matplotlib.pyplot` and `seaborn`
+
+These are **plotting libraries** that let you visualize data with graphs.
+
+* **`matplotlib.pyplot`**: Very flexible but lower-level (you write more code to customize things).
+
+  * Nicknamed `plt`
+* **`seaborn`**: Built on top of matplotlib. Easier and more beautiful plots.
+
+> Both libraries are essential tools for **data visualization** in Python.
+
+---
+
+#### 🟩 Next lines (still in Cell 5):
+
+```python
+# Sentiment count plot
+sns.countplot(data=df, x='sentiment')
+
+plt.title("Distribution of Sentiments")
+
+plt.show()
+```
+
+* **`sns.countplot(...)`**: Creates a **bar plot** that shows how many reviews are labeled as each sentiment (e.g., "positive" vs "negative").
+* **`x='sentiment'`**: Tells it to group data based on the `sentiment` column in `df`.
+* **`plt.title(...)`**: Adds a title to the chart.
+* **`plt.show()`**: Displays the chart.
+
+> This plot gives you a sense of how balanced your dataset is — are there more positive reviews than negative?
+
+---
+
+#### 🟩 Next: Word count distribution
+
+```python
+df['review_length'] = df['review'].apply(lambda x: len(x.split()))
+```
+
+* **`df['review']`**: The column that contains full-text movie reviews.
+* **`.apply(...)`**: Applies a function to each review.
+* **`lambda x: len(x.split())`**:
+
+  * `lambda` is an anonymous function.
+  * `x.split()` breaks the review into words.
+  * `len(...)` counts the words.
+* This creates a new column called `review_length` with the **number of words in each review**.
+
+> This is a form of **feature engineering** — turning raw data into something useful.
+
+---
+
+```python
+sns.histplot(df['review_length'], bins=50)
+
+plt.title("Distribution of Review Length (in words)")
+
+plt.xlabel("Word Count")
+
+plt.ylabel("Frequency")
+
+plt.show()
+```
+
+* **`sns.histplot(...)`**: Creates a histogram, which shows how many reviews fall into different word count ranges.
+* **`bins=50`**: Number of bars (range groups) to divide the data into.
+
+> This helps you see if reviews are mostly short or long.
+
+---
+
+### 🟩 **Code Cell 6**
+
+```python
+import tensorflow as tf
+
+from sklearn.model_selection import train_test_split
+
+from tensorflow.keras.preprocessing.text import Tokenizer
+
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+```
+
+#### 🔍 `import tensorflow as tf`
+
+* **TensorFlow** is a **deep learning framework** developed by Google.
+* It’s used to build and train **neural networks**, especially for tasks like text classification or image recognition.
+* **`tf`** is the standard shortcut name.
+
+#### 🔍 `from sklearn.model_selection import train_test_split`
+
+* **`sklearn` (scikit-learn)**: A machine learning library.
+* **`train_test_split`**: A function that splits your data into two sets:
+
+  * **Training data**: Used to train the model.
+  * **Test data**: Used to see how well the model performs on unseen data.
+
+#### 🔍 `from tensorflow.keras.preprocessing.text import Tokenizer`
+
+* **Tokenizer**: Converts text into sequences of numbers (each word gets a number).
+* This is needed because models **can’t work directly with words** — only with numbers.
+
+#### 🔍 `from tensorflow.keras.preprocessing.sequence import pad_sequences`
+
+* **pad\_sequences**: Makes sure all text sequences are the **same length** (by padding with zeros).
+* Neural networks require inputs of the same shape.
+
+---
+
+Would you like to continue with the next few cells?
+Let’s now go through the next three code cells. These steps are crucial for **preparing the text data** for use in a machine learning model.
+
+---
+
+### 🟩 **Code Cell 7**
+
+```python
+# Convert labels to binary
+
+df['sentiment'] = df['sentiment'].map({'positive': 1, 'negative': 0})
+```
+
+#### 🔍 What this does:
+
+* The `sentiment` column currently has **text labels**: `"positive"` and `"negative"`.
+* **`.map({...})`** converts these text values to numbers:
+
+  * `"positive"` → `1`
+  * `"negative"` → `0`
+
+> Machine learning models need **numbers**, not text. This is a common step in classification tasks.
+
+---
+
+### 🟩 **Code Cell 8**
+
+```python
+# Train-test split
+
+X_train, X_test, y_train, y_test = train_test_split(df['review'], df['sentiment'], test_size=0.2, random_state=42)
+```
+
+#### 🔍 What this does:
+
+* **`df['review']`**: All the movie review texts (input data).
+* **`df['sentiment']`**: Their corresponding labels (output).
+* **`train_test_split(...)`**: Splits the dataset into two parts:
+
+  * `X_train`, `y_train`: 80% of the data for training
+  * `X_test`, `y_test`: 20% for testing (because of `test_size=0.2`)
+* **`random_state=42`**: Sets a seed for reproducibility — it ensures the split is the same each time you run the code.
+
+> This is an essential step to **evaluate** your model’s performance on unseen data.
+
+---
+
+### 🟩 **Code Cell 9**
+
+```python
+# Tokenize and pad
+
+vocab_size = 10000
+
+max_length = 300
+
+tokenizer = Tokenizer(num_words=vocab_size, oov_token="<OOV>")
+
+tokenizer.fit_on_texts(X_train)
+```
+
+#### 🔍 Step by step:
+
+##### ✅ `vocab_size = 10000`
+
+* You're telling the tokenizer to keep the **10,000 most common words** in the dataset.
+* This limits memory usage and model size.
+
+##### ✅ `max_length = 300`
+
+* Reviews will be **trimmed or padded** so that every one is exactly 300 words long.
+* Neural networks require **fixed-length input**.
+
+##### ✅ `Tokenizer(...)`
+
+* Creates a tokenizer object.
+* **`num_words=10000`**: Keep only the most common 10,000 words.
+* **`oov_token="<OOV>"`**:
+
+  * “OOV” = Out Of Vocabulary.
+  * If a word isn’t in the 10,000 most common, it gets replaced with `<OOV>`.
+
+##### ✅ `tokenizer.fit_on_texts(X_train)`
+
+* This scans all training reviews and builds a **word-to-number dictionary**.
+
+  * Example: `{"the": 1, "movie": 2, "was": 3, ...}`
+
+> This prepares the text for conversion into sequences of numbers.
+
+---
+
+Would you like to continue with the next cells?
+Here’s a line-by-line explanation of **code cell 10** from your notebook:
+
+```python
+actual_vocab_size = len(tokenizer.word_index) + 1  # Add 1 for padding/OOV token
+```
+
+* `tokenizer.word_index` is a dictionary mapping each word to a unique integer index, created during tokenization.
+* `len(tokenizer.word_index)` gives the number of unique words found in the training corpus.
+* `+ 1` accounts for the special padding or out-of-vocabulary (OOV) token, which is typically assigned index 0.
+* This total becomes the actual vocabulary size needed for the embedding layer or other processing.
+
+```python
+print(f"Actual Vocabulary Size: {actual_vocab_size}")
+```
+
+* Prints the calculated vocabulary size to confirm or debug how many tokens will be considered by the model.
+
+Would you like me to continue with code cell 11?
+Here’s a line-by-line explanation of **code cell 11**:
+
+```python
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+```
+
+* `tf.config.list_physical_devices('GPU')`: This TensorFlow function returns a list of all physical GPU devices available on the machine.
+* `len(...)`: Counts how many GPUs were found.
+* `print(...)`: Outputs the number of available GPUs, which helps verify whether TensorFlow can leverage GPU acceleration for training.
+
+Would you like to proceed to code cell 12?
+Sure! Here's a **line-by-line explanation** of each code cell from **Cell 12 onward** in your notebook:
+
+---
+
+### 🔹 **Cell 12**
+
+```python
+def predict_points(runs):
+```
+
+* This defines a function called `predict_points` that takes one argument: `runs`.
+
+```python
+    if runs < 50:
+        return 2
+```
+
+* If the player scored fewer than 50 runs, return **2 points**.
+
+```python
+    elif 50 <= runs < 100:
+        return 4
+```
+
+* If the player scored **between 50 and 99** runs, return **4 points**.
+
+```python
+    elif 100 <= runs < 150:
+        return 6
+```
+
+* If the player scored **between 100 and 149** runs, return **6 points**.
+
+```python
+    else:
+        return 8
+```
+
+* If the player scored **150 or more**, return **8 points**.
+
+```python
+def predict_category(points):
+```
+
+* This defines a second function called `predict_category` that accepts a `points` argument.
+
+```python
+    if points <= 2:
+        return 'Poor'
+```
+
+* Points **2 or below** is categorized as `'Poor'`.
+
+```python
+    elif 3 <= points <= 4:
+        return 'Average'
+```
+
+* Points in **\[3, 4]** is categorized as `'Average'`.
+
+```python
+    elif 5 <= points <= 6:
+        return 'Good'
+```
+
+* Points in **\[5, 6]** is categorized as `'Good'`.
+
+```python
+    else:
+        return 'Excellent'
+```
+
+* Points **above 6** is categorized as `'Excellent'`.
+
+---
+
+### 🔹 **Cell 13**
+
+```python
+df['Predicted Points'] = df['Runs'].apply(predict_points)
+```
+
+* This creates a new column in the DataFrame `df` named `'Predicted Points'`, calculated by applying the `predict_points` function to each row in the `'Runs'` column.
+
+```python
+df['Predicted Category'] = df['Predicted Points'].apply(predict_category)
+```
+
+* Then it creates another new column `'Predicted Category'` by applying the `predict_category` function to each value in `'Predicted Points'`.
+
+```python
+df[['Runs', 'Predicted Points', 'Predicted Category']].head()
+```
+
+* Displays the **first 5 rows** of the columns `'Runs'`, `'Predicted Points'`, and `'Predicted Category'` for quick verification.
+
+---
+
+### 🔹 **Cell 14**
+
+```python
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+```
+
+* Imports necessary modules for:
+
+  * Splitting data into training/test sets,
+  * Building a Random Forest model,
+  * Evaluating model performance.
+
+```python
+df['Category'] = df['Category'].astype('category').cat.codes
+```
+
+* Converts the `'Category'` column (assumed to be text labels like 'Poor', 'Good', etc.) into **numerical codes** for modeling (e.g., `'Poor' → 0`, `'Good' → 1`...).
+
+```python
+features = ['Matches', 'Runs', 'Average', 'Strike Rate', '100s', '50s']
+target = 'Category'
+```
+
+* Specifies the feature columns to use for prediction and the target column (`'Category'`).
+
+```python
+X = df[features]
+y = df[target]
+```
+
+* `X` contains the input features, and `y` contains the labels (i.e., categories).
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+```
+
+* Splits the dataset into training (80%) and testing (20%) sets. `random_state=42` ensures reproducibility.
+
+```python
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+```
+
+* Initializes a Random Forest model with **100 decision trees** and a fixed seed for consistency.
+
+```python
+model.fit(X_train, y_train)
+```
+
+* Trains the model using the training data.
+
+```python
+y_pred = model.predict(X_test)
+```
+
+* Uses the trained model to predict the labels on the test set.
+
+```python
+print("Accuracy:", accuracy_score(y_test, y_pred))
+```
+
+* Prints the overall accuracy of predictions on the test set.
+
+```python
+print("Classification Report:\n", classification_report(y_test, y_pred))
+```
+
+* Prints detailed precision, recall, and F1-score for each category class.
+
+---
+
+### 🔹 **Cell 15**
+
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+```
+
+* Imports `matplotlib` for plotting and `seaborn` for enhanced visualizations.
+
+```python
+feature_importances = model.feature_importances_
+```
+
+* Extracts feature importance scores from the trained Random Forest model.
+
+```python
+feature_data = pd.Series(feature_importances, index=features).sort_values(ascending=False)
+```
+
+* Creates a Pandas Series from the importances, labeled with feature names, and sorts them in descending order.
+
+```python
+plt.figure(figsize=(10,6))
+```
+
+* Sets the size of the plot.
+
+```python
+sns.barplot(x=feature_data, y=feature_data.index)
+```
+
+* Creates a horizontal bar plot showing the importance of each feature.
+
+```python
+plt.title("Feature Importances")
+plt.xlabel("Importance Score")
+plt.ylabel("Features")
+```
+
+* Adds a title and axis labels to the plot.
+
+```python
+plt.show()
+```
+
+* Displays the final plot.
+
+---
+
+Let me know if you'd like this summarized or want help modifying any part of the code.

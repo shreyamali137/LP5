@@ -1,0 +1,136 @@
+### Answers to Potential Questions on the Parallel vs Sequential Sorting Assignment
+
+---
+
+#### ᾞ0 Conceptual Questions
+
+**1. What is OpenMP?**
+OpenMP (Open Multi-Processing) is an API that supports multi-platform shared memory multiprocessing programming in C, C++, and Fortran. It uses compiler directives (e.g., `#pragma omp`) to indicate parallel sections of code.
+
+**2. How does OpenMP help in parallel programming?**
+It allows developers to write code that executes tasks concurrently on multiple CPU cores, reducing execution time for large problems.
+
+**3. Why is `#pragma omp parallel` used?**
+This directive starts a parallel region, creating multiple threads that can run concurrently.
+
+**4. What is the difference between parallel and sequential algorithms?**
+Sequential algorithms execute one operation at a time, while parallel algorithms execute multiple operations simultaneously using multiple threads or cores.
+
+**5. What is the time complexity of Bubble Sort and Merge Sort?**
+
+* Bubble Sort: O(n^2) in all cases.
+* Merge Sort: O(n log n) in all cases.
+
+**6. How does it change with parallelism?**
+
+* Parallel Bubble Sort: O(n^2 / p)
+* Parallel Merge Sort: O(n log n / p), where `p` is the number of threads.
+
+**7. Why is Merge Sort more suitable for parallelization?**
+Because it divides the problem into independent subproblems (divide and conquer), making it ideal for parallel execution.
+
+**8. What are `#pragma omp parallel for` and `#pragma omp parallel sections` used for?**
+
+* `parallel for`: Automatically splits a for-loop across threads.
+* `parallel sections`: Executes independent code blocks in parallel.
+
+**9. What is a race condition? How does this code avoid it?**
+A race condition occurs when multiple threads access shared data simultaneously. This code avoids it by ensuring threads work on separate indices or merge independent subarrays.
+
+---
+
+#### 🧪 Code-Specific Questions
+
+**10. Why do we use `omp_get_wtime()` instead of `clock()` or `chrono`?**
+Because `omp_get_wtime()` gives a high-resolution wall-clock time suitable for benchmarking parallel code.
+
+**11. What does `omp_set_num_threads(4)` do?**
+It sets the number of OpenMP threads to 4 for parallel regions.
+
+**12. Why is `arr_copy` used in the code?**
+To reset the array to its original unsorted state before each sort, so all algorithms run on the same input.
+
+**13. What does this section of code do?**
+
+```cpp
+#pragma omp parallel sections {
+    #pragma omp section
+    parallelMergeSort(...);
+}
+```
+
+It runs the recursive calls to `parallelMergeSort` in parallel sections, enabling concurrency in divide-and-conquer steps.
+
+**14. Why is a single thread (`#pragma omp single`) used before calling `parallelMergeSort` in the `main()` function?**
+To ensure only one thread initiates the parallel merge sort, which then spawns new threads inside.
+
+**15. Why do we use modulo operation (`i % 2`) in `parallelBubbleSort`?**
+To alternate between even and odd indexed comparisons for correct adjacent swaps (Odd-Even Transposition Sort).
+
+---
+
+#### 🔍 Sorting Logic and Comparison Questions
+
+**16. Explain how the Bubble Sort and Merge Sort algorithms work.**
+
+* Bubble Sort repeatedly compares adjacent elements and swaps them if they are in the wrong order.
+* Merge Sort divides the array into halves, recursively sorts each half, and merges them.
+
+**17. How is the parallel Bubble Sort implemented differently from the sequential one?**
+Parallel version uses `#pragma omp parallel for` to parallelize the adjacent comparisons in each pass.
+
+**18. What is the output of the program?**
+It prints the time taken by each algorithm and their speedup factors in microseconds.
+
+**19. What does the speedup ratio tell us?**
+It indicates how much faster the parallel version is compared to the sequential one. Speedup = Sequential time / Parallel time.
+
+**20. Why does the parallel version sometimes take longer than sequential for small inputs?**
+Because thread creation and management overhead outweigh the benefits of parallelism for small data sizes.
+
+---
+
+#### ⚙️ Performance and Optimization Questions
+
+**21. What are the factors that affect the performance of parallel programs?**
+
+* Number of threads
+* Overhead of thread management
+* Data size
+* CPU core count
+* Memory/cache usage
+
+**22. Why is Merge Sort generally more efficient for large arrays?**
+Due to its O(n log n) time complexity and better divide-and-conquer structure.
+
+**23. What is false sharing in OpenMP? Could it affect this program?**
+False sharing occurs when threads modify variables on the same cache line, leading to performance issues. It’s unlikely in this program since threads mostly access separate indices.
+
+**24. Can we parallelize the `merge` function? Why or why not?**
+It’s hard to parallelize `merge()` efficiently because it has a lot of dependencies and writes to shared indices.
+
+**25. Is the parallel implementation cache-friendly? Why does it matter?**
+Merge Sort is more cache-friendly due to sequential memory access. Cache-friendliness improves performance by reducing memory latency.
+
+---
+
+#### 🤖 Miscellaneous and Advanced
+
+**26. What are the limitations of OpenMP?**
+
+* Only supports shared memory architecture.
+* Difficult to parallelize certain problems.
+* Debugging is harder.
+* Limited control over thread scheduling.
+
+**27. If we increase the array size to 1 million elements, how will the performance change?**
+Parallel Merge Sort will show significant speedup, while parallel Bubble Sort will still struggle due to O(n^2) complexity.
+
+**28. Can we use dynamic scheduling in OpenMP for this problem? When would it help?**
+Yes. It helps when tasks have varying execution times. For Bubble Sort, it’s less useful, but for Merge Sort, it could help balance load.
+
+**29. Is the parallel implementation cache-friendly? Why does it matter?**
+Yes, Merge Sort tends to be more cache-friendly. It matters because better cache usage improves execution speed.
+
+**30. How does the memory usage compare between Merge Sort and Bubble Sort?**
+Merge Sort uses extra space (O(n)) for merging, while Bubble Sort is in-place (O(1) extra space).

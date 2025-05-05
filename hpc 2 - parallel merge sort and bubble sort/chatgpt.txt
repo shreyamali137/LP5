@@ -1,0 +1,312 @@
+Great, Shreya! Let's break this entire C++ code down **line-by-line**, from the absolute basics, assuming you're just getting started with both **C++** and **OpenMP** for **parallel computing**. We'll cover the meaning of each line, the purpose of each function, and why things are done the way they are.
+
+---
+
+## 🧠 **Big Picture First: What Does This Program Do?**
+
+This program compares **sequential and parallel implementations** of **Bubble Sort** and **Merge Sort** using **OpenMP**, a tool used for multi-threaded programming in C/C++.
+
+It:
+
+1. Sorts a large array using 4 different approaches.
+2. Measures the execution time of each method.
+3. Calculates the **speedup** (how much faster parallel is than sequential).
+
+---
+
+## ✅ **Step-by-Step Line-by-Line Explanation**
+
+---
+
+### 📌 **Headers and Setup**
+
+```cpp
+#include <bits/stdc++.h>
+#include <omp.h>
+```
+
+* `#include <bits/stdc++.h>`
+
+  * A **GCC extension** that includes all standard C++ libraries.
+  * This includes things like `iostream`, `vector`, `algorithm`, `cstdlib`, etc.
+  * Not standard in industry — but okay in learning environments.
+
+* `#include <omp.h>`
+
+  * Includes the **OpenMP** library.
+  * Allows use of parallel constructs like `#pragma omp parallel`, `omp_get_wtime()`, etc.
+
+---
+
+### 📌 **Using Namespace**
+
+```cpp
+using namespace std;
+```
+
+* Makes it so you don’t need to write `std::vector` or `std::cout` every time.
+* **Not preferred in large projects**, but good for simplicity in small ones.
+
+---
+
+## ✅ **Bubble Sort - Sequential Version**
+
+```cpp
+void bubbleSort(vector<int> &arr)
+{
+    int n = arr.size();
+```
+
+* `vector<int> &arr`: Passes array **by reference** (no copy, edits original).
+* `arr.size()` gives the number of elements.
+
+```cpp
+    for (int i = 0; i < n - 1; ++i)
+    {
+        for (int j = 0; j < n - i - 1; ++j)
+        {
+            if (arr[j] > arr[j + 1])
+            {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+```
+
+* Classic **Bubble Sort**:
+
+  * Repeatedly compares and swaps adjacent elements if they’re out of order.
+  * After each full pass, the largest element "bubbles" to the end.
+  * Complexity: **O(n²)** (very slow for large inputs).
+
+---
+
+## ✅ **Merge Sort - Sequential Version**
+
+```cpp
+void merge(vector<int> &arr, int l, int m, int r)
+```
+
+* Merges two sorted halves of an array:
+
+  * Left half: `arr[l...m]`
+  * Right half: `arr[m+1...r]`
+
+```cpp
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    vector<int> L(n1), R(n2);
+
+    for (int i = 0; i < n1; ++i)
+        L[i] = arr[l + i];
+    for (int j = 0; j < n2; ++j)
+        R[j] = arr[m + 1 + j];
+```
+
+* Creates two new arrays `L` and `R` for left and right halves.
+
+```cpp
+    int i = 0, j = 0, k = l;
+    while (i < n1 && j < n2)
+    {
+        if (L[i] <= R[j])
+            arr[k++] = L[i++];
+        else
+            arr[k++] = R[j++];
+    }
+
+    while (i < n1)
+        arr[k++] = L[i++];
+    while (j < n2)
+        arr[k++] = R[j++];
+}
+```
+
+* Combines two sorted arrays into one sorted array.
+
+```cpp
+void mergeSort(vector<int> &arr, int l, int r)
+```
+
+* Recursive function:
+
+  * Divides array into halves, sorts them individually.
+  * Uses `merge()` to combine.
+  * Complexity: **O(n log n)**.
+
+---
+
+## ✅ **Parallel Bubble Sort**
+
+```cpp
+void parallelBubbleSort(vector<int> &arr)
+{
+    int n = arr.size();
+```
+
+```cpp
+    for (int i = 0; i < n; ++i)
+    {
+        int start = i % 2;
+        #pragma omp parallel for default(none) shared(arr, n, start)
+        for (int j = start; j < n - 1; j += 2)
+        {
+            if (arr[j] > arr[j + 1])
+                swap(arr[j], arr[j + 1]);
+        }
+    }
+}
+```
+
+* `start = i % 2`:
+
+  * Alternates between comparing even pairs and odd pairs.
+  * This is called the **odd-even transposition sort**.
+* `#pragma omp parallel for`: Runs the for-loop in parallel.
+
+  * Threads each handle part of the array.
+
+> ✅ Still **O(n²)** but may perform faster due to parallelism.
+
+---
+
+## ✅ **Parallel Merge Sort**
+
+```cpp
+void parallelMergeSort(vector<int> &arr, int l, int r)
+```
+
+```cpp
+    if (l < r)
+    {
+        int m = l + (r - l) / 2;
+        
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+            parallelMergeSort(arr, l, m);
+            #pragma omp section
+            parallelMergeSort(arr, m + 1, r);
+        }
+        merge(arr, l, m, r);
+    }
+}
+```
+
+* Uses **OpenMP parallel sections** to divide the merge sort into parallel tasks.
+* Two recursive calls to `parallelMergeSort` can run on separate threads.
+* Ideal parallel algorithm because of its **divide-and-conquer** structure.
+
+---
+
+## ✅ **Main Function – Measuring Performance**
+
+```cpp
+int main()
+{
+    omp_set_num_threads(4); 
+```
+
+* Tells OpenMP to use **4 threads** for parallel execution.
+
+```cpp
+    const int size = 10000;
+    vector<int> arr(size), arr_copy(size);
+
+    for (int i = 0; i < size; ++i)
+    {
+        arr[i] = rand() % 1000;
+        arr_copy[i] = arr[i];
+    }
+```
+
+* Generates a random array of 10,000 numbers from 0 to 999.
+* `arr_copy` keeps the original array for resetting.
+
+---
+
+## 🕒 **Timing and Testing Each Version**
+
+```cpp
+    double start = omp_get_wtime();
+    bubbleSort(arr);
+    double stop = omp_get_wtime();
+    double seq_duration_bubble = stop - start;
+```
+
+* Measures execution time for **sequential Bubble Sort** using `omp_get_wtime()`.
+
+Same is repeated for:
+
+* Parallel Bubble Sort
+* Sequential Merge Sort
+* Parallel Merge Sort
+
+For parallel merge sort, there's a special use of `#pragma omp single`:
+
+```cpp
+#pragma omp parallel
+{
+    #pragma omp single
+    {
+        parallelMergeSort(arr, 0, size - 1);
+    }
+}
+```
+
+* Ensures only one thread **starts** the merge sort (which will fork other threads internally).
+
+---
+
+## 📊 **Displaying Results**
+
+```cpp
+    cout << "Sequential Bubble Sort Time: " << seq_duration_bubble * 1e6 << " microseconds" << endl;
+```
+
+* Shows time taken in **microseconds (µs)**.
+* Calculates **Speedup = Sequential time / Parallel time**
+
+Also prints:
+
+* Total number of threads
+* Time for each version
+* Speedup for both sorting types
+* Notes about time complexity
+
+---
+
+## ✅ **Complexity Reminder**
+
+At the end:
+
+```cpp
+cout << "The time complexity of Bubble Sort is O(n^2)..." << endl;
+```
+
+Helps remind you:
+
+* Bubble Sort is inefficient.
+* Merge Sort is better for larger datasets.
+* Parallelizing helps, but not always by a lot (depends on input, thread count, system).
+
+---
+
+## 📌 Summary of Key Concepts
+
+| Concept                    | Meaning                                                   |
+| -------------------------- | --------------------------------------------------------- |
+| `vector<int>`              | Dynamic array of integers in C++                          |
+| `#pragma omp parallel for` | Runs a loop in parallel                                   |
+| `#pragma omp sections`     | Defines independent tasks that can be run in parallel     |
+| `omp_get_wtime()`          | Gets current wall clock time (used to measure durations)  |
+| `omp_set_num_threads(n)`   | Sets the number of threads OpenMP will use                |
+| Speedup                    | `T_seq / T_par` (how much faster the parallel version is) |
+| Efficiency                 | `Speedup / Number of threads`                             |
+| Throughput                 | Work done per unit time                                   |
+
+---
+
+Would you like me to generate the **journal format** for this assignment too, based on the instructions you gave earlier?

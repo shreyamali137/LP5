@@ -1,0 +1,77 @@
+Here are **potential interview or viva questions** based on your BFS & DFS assignment with OpenMP parallelism — along with **simple, clear answers**:
+
+---
+
+### 🔹 **Conceptual Questions**
+
+1. **Q: What is BFS and how does it work?**
+   **A:** BFS (Breadth-First Search) is a graph traversal algorithm that explores nodes level by level. It uses a queue to visit the nearest unvisited neighbors before moving deeper.
+
+2. **Q: What is DFS and how does it work?**
+   **A:** DFS (Depth-First Search) is a graph traversal method that goes deep into one branch of the graph before backtracking. It typically uses recursion or a stack.
+
+3. **Q: What is the difference between BFS and DFS?**
+   **A:**
+
+   | BFS                               | DFS                     |
+   | --------------------------------- | ----------------------- |
+   | Level-wise                        | Depth-wise              |
+   | Uses queue                        | Uses stack or recursion |
+   | Shortest path in unweighted graph | Not guaranteed          |
+   | Slower for deep graphs            | Can go deep fast        |
+
+---
+
+### 🔹 **Code-Based Questions**
+
+4. **Q: What does `adj.resize(V)` do in the constructor?**
+   **A:** It creates a list of size `V`, where each index stores a list of adjacent vertices (neighbors).
+
+5. **Q: Why are we using `vector<bool> visited`?**
+   **A:** To keep track of which nodes have already been visited to avoid revisiting them and falling into infinite loops.
+
+6. **Q: What does `omp_set_num_threads(4)` do?**
+   **A:** It tells OpenMP to use 4 threads for parallel execution.
+
+---
+
+### 🔹 **Parallelism Questions**
+
+7. **Q: How is parallel BFS implemented here?**
+   **A:** It uses OpenMP to allow multiple threads to process the neighbors of the current node in parallel. The `#pragma omp for` parallelizes the loop over adjacent vertices.
+
+8. **Q: Why do we use `#pragma omp critical` in parallel BFS?**
+   **A:** To make sure only one thread accesses shared resources like `queue` and `visited` at a time, avoiding race conditions.
+
+9. **Q: Why is parallel DFS harder than BFS?**
+   **A:** DFS is recursive and can go very deep. Parallelizing recursion is tricky and can cause race conditions if not managed properly.
+
+10. **Q: Are BFS and DFS suitable for parallelization?**
+    **A:** BFS is more suitable because it explores a whole level at a time (many nodes can be processed in parallel). DFS is more sequential by nature.
+
+---
+
+### 🔹 **Performance/Output Questions**
+
+11. **Q: How do you measure the execution time in this code?**
+    **A:** Using `omp_get_wtime()` before and after function calls, then subtracting to get the duration.
+
+12. **Q: Why is parallel BFS not always faster?**
+    **A:** Due to overheads from thread creation, synchronization (critical sections), and for small graphs, sequential might actually be faster.
+
+---
+
+### 🔹 **Miscellaneous Questions**
+
+13. **Q: What happens if you remove `#pragma omp critical`?**
+    **A:** Multiple threads may modify the queue or visited array at the same time, leading to inconsistent behavior or incorrect results.
+
+14. **Q: What are the real-life applications of BFS/DFS?**
+    **A:**
+
+* BFS: Finding shortest path in navigation, network broadcasting
+* DFS: Puzzle solving, topological sorting, detecting cycles in a graph
+
+---
+
+Would you like a 1-page PDF summary of all these Q\&As for revision?

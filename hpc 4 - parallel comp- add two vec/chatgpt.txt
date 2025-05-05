@@ -1,0 +1,307 @@
+Great, Shreya! Let's break your CUDA C++ matrix multiplication code **line by line**, with explanations for **each concept** as if you're completely new to this. I'll keep things very beginner-friendly and detailed.
+
+---
+
+### 🔹 HEADER FILES
+
+```cpp
+#include <iostream>
+#include <cuda_runtime.h>
+using namespace std;
+using namespace std::chrono;
+```
+
+* `#include <iostream>`: Includes the input-output stream library. It allows you to use `cin` and `cout`.
+* `#include <cuda_runtime.h>`: This is needed for CUDA programming. It contains functions like `cudaMalloc`, `cudaMemcpy`, and `cudaFree`, which help interact with the GPU.
+* `using namespace std;`: So that you don't need to write `std::cout`, `std::cin`, etc., every time.
+* `using namespace std::chrono;`: To use C++'s time functions (for measuring how long things take).
+
+---
+
+### 🔹 GPU KERNEL FUNCTION
+
+```cpp
+__global__ void multiply(int* A, int* B, int* C, int M, int N, int K)
+```
+
+* `__global__`: This tells CUDA that this function runs **on the GPU** and is called **from the CPU**.
+* `multiply(...)`: Function to multiply matrices A and B and store result in C.
+
+Now inside the kernel:
+
+```cpp
+int row = blockIdx.y * blockDim.y + threadIdx.y;
+int col = blockIdx.x * blockDim.x + threadIdx.x;
+```
+
+These calculate which row and column this thread is working on.
+
+* `blockIdx`: Index of the block in the grid.
+* `blockDim`: Size (number of threads) of each block.
+* `threadIdx`: Index of the thread within its block.
+* `row`, `col`: Position in the output matrix `C` this thread is responsible for.
+
+```cpp
+if (row < M && col < K)
+```
+
+Makes sure we don’t go out of matrix bounds.
+
+```cpp
+int sum = 0;
+for (int i = 0; i < N; i++) {
+    sum += A[row * N + i] * B[i * K + col];
+}
+C[row * K + col] = sum;
+```
+
+This loop does the actual matrix multiplication:
+
+* Multiply the row of `A` with column of `B` and store the result in `C[row][col]`.
+
+---
+
+### 🔹 INITIALIZE FUNCTION
+
+```cpp
+void initialize(int* matrix, int rows, int cols)
+```
+
+* Function to take matrix input from user using `cin`.
+
+```cpp
+for (int i = 0; i < rows * cols; i++) {
+    cout << "Enter element " << i + 1 << ": ";
+    cin >> matrix[i];
+}
+```
+
+* User enters the matrix elements one by one.
+
+---
+
+### 🔹 PRINT FUNCTION
+
+```cpp
+void print(int* matrix, int rows, int cols)
+```
+
+* Nicely prints the matrix in a 2D format.
+
+```cpp
+for (int row = 0; row < rows; row++) {
+    for (int col = 0; col < cols; col++) {
+        cout << matrix[row * cols + col] << " ";
+    }
+    cout << '\n';
+}
+```
+
+---
+
+### 🔹 SEQUENTIAL MULTIPLICATION (CPU)
+
+```cpp
+void sequentialMultiply(int* A, int* B, int* C, int M, int N, int K)
+```
+
+Performs matrix multiplication **on CPU**, exactly how it's taught in school.
+
+```cpp
+for (int i = 0; i < M; i++) {
+    for (int j = 0; j < K; j++) {
+        int sum = 0;
+        for (int k = 0; k < N; k++) {
+            sum += A[i * N + k] * B[k * K + j];
+        }
+        C[i * K + j] = sum;
+    }
+}
+```
+
+---
+
+### 🔹 MAIN FUNCTION
+
+```cpp
+int main()
+```
+
+Starts the program. Now step by step:
+
+```cpp
+int M, N, K;
+cout << "Enter the number of rows and columns of the first matrix: ";
+cin >> M >> N;
+cout << "Enter the number of columns of the second matrix: ";
+cin >> K;
+```
+
+Takes matrix dimensions:
+
+* Matrix A is M × N
+* Matrix B is N × K
+* Result C is M × K
+
+---
+
+### 🔹 MEMORY ALLOCATION ON CPU
+
+```cpp
+int* A, * B, * C;
+A = new int[M * N];
+B = new int[N * K];
+C = new int[M * K];
+```
+
+* `A`, `B`, and `C` are pointers to matrices stored in heap memory.
+
+---
+
+### 🔹 INPUT MATRICES
+
+```cpp
+initialize(A, M, N);
+initialize(B, N, K);
+```
+
+Takes input for both matrices.
+
+---
+
+### 🔹 DISPLAY MATRICES
+
+```cpp
+print(A, M, N);
+print(B, N, K);
+```
+
+Print matrices for visual verification.
+
+---
+
+### 🔹 ALLOCATE MEMORY ON GPU
+
+```cpp
+int* X, * Y, * Z;
+cudaMalloc(&X, M * N * sizeof(int));
+cudaMalloc(&Y, N * K * sizeof(int));
+cudaMalloc(&Z, M * K * sizeof(int));
+```
+
+* `cudaMalloc`: Allocates memory on **GPU device**.
+* X, Y, Z are GPU equivalents of A, B, C.
+
+---
+
+### 🔹 COPY DATA TO GPU
+
+```cpp
+cudaMemcpy(X, A, M * N * sizeof(int), cudaMemcpyHostToDevice);
+cudaMemcpy(Y, B, N * K * sizeof(int), cudaMemcpyHostToDevice);
+```
+
+* `cudaMemcpy`: Copies data from CPU (Host) to GPU (Device).
+
+---
+
+### 🔹 SET UP CUDA BLOCKS & THREADS
+
+```cpp
+int THREADS = 16;
+int BLOCKS = (M + THREADS - 1) / THREADS;
+
+dim3 threads(THREADS, THREADS);
+dim3 blocks(BLOCKS, BLOCKS);
+```
+
+* `dim3`: Used to define thread/block structure in 2D.
+* This sets up a 2D grid of blocks, each block having 16×16 threads (common CUDA setting).
+
+---
+
+### 🔹 SEQUENTIAL MULTIPLICATION TIMING
+
+```cpp
+auto start = high_resolution_clock::now();
+sequentialMultiply(A, B, C, M, N, K);
+auto stop = high_resolution_clock::now();
+auto seq_duration = duration_cast<microseconds>(stop - start);
+```
+
+* Measures time taken to do CPU matrix multiplication.
+
+---
+
+### 🔹 PRINT SEQUENTIAL RESULT
+
+```cpp
+print(C, M, K);
+```
+
+* Shows result of CPU multiplication.
+
+---
+
+### 🔹 PARALLEL MULTIPLICATION ON GPU
+
+```cpp
+start = high_resolution_clock::now();
+multiply<<<blocks, threads>>>(X, Y, Z, M, N, K);
+cudaMemcpy(C, Z, M * K * sizeof(int), cudaMemcpyDeviceToHost);
+stop = high_resolution_clock::now();
+auto par_duration = duration_cast<microseconds>(stop - start);
+```
+
+* Launches the GPU kernel using `<<<blocks, threads>>>`.
+* Copies back result from GPU to CPU after computation.
+
+---
+
+### 🔹 PRINT GPU RESULT
+
+```cpp
+print(C, M, K);
+```
+
+---
+
+### 🔹 PRINT TIME TAKEN
+
+```cpp
+cout << "Sequential Multiplication Time: " << seq_duration.count() << " microseconds" << endl;
+cout << "Parallel Multiplication Time: " << par_duration.count() << " microseconds" << endl;
+```
+
+Compare how long it took for CPU vs GPU.
+
+---
+
+### 🔹 CLEAN UP MEMORY
+
+```cpp
+delete[] A;
+delete[] B;
+delete[] C;
+cudaFree(X);
+cudaFree(Y);
+cudaFree(Z);
+```
+
+* `delete[]`: Frees CPU memory.
+* `cudaFree`: Frees GPU memory.
+
+---
+
+### ✅ SUMMARY OF WHAT YOU'VE LEARNED
+
+| Concept                         | Purpose                                        |
+| ------------------------------- | ---------------------------------------------- |
+| `__global__`                    | Declares a GPU kernel function                 |
+| `cudaMalloc`                    | Allocate memory on GPU                         |
+| `cudaMemcpy`                    | Transfer data between CPU and GPU              |
+| `dim3`                          | Define block and grid size in CUDA             |
+| `multiply<<<...>>>`             | Launch the GPU kernel                          |
+| `chrono::high_resolution_clock` | Measures time taken for performance comparison |
+
+Would you like a visual explanation (like a flow diagram) for how memory and control flow moves from CPU to GPU?

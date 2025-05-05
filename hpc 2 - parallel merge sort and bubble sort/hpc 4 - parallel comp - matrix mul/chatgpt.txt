@@ -1,0 +1,336 @@
+Sure, Shreya! Let's walk through this CUDA program **line by line**, assuming you're a beginner and want to understand **every term**, why it’s used, and what it does.
+
+---
+
+## ✅ Overview
+
+This program performs **vector addition** (i.e., element-wise sum of two arrays) using:
+
+1. **Sequential C++ code** on CPU.
+2. **Parallel CUDA code** on GPU.
+
+You'll compare the **performance** of both.
+
+---
+
+## 📜 Code Breakdown (Line-by-Line)
+
+```cpp
+#include <iostream>
+```
+
+* This is a **header file** in C++.
+* `iostream` lets us use **input/output** operations like `cin` and `cout`.
+
+---
+
+```cpp
+#include <cuda_runtime.h>
+```
+
+* This is a **CUDA-specific header**.
+* It provides access to **CUDA runtime API** — necessary for functions like `cudaMalloc`, `cudaMemcpy`, `cudaFree`, etc.
+* These are used to manage memory **on the GPU**.
+
+---
+
+```cpp
+using namespace std;
+using namespace std::chrono;
+```
+
+* `using namespace std;` lets you use `cout`, `cin` without writing `std::cout`.
+* `std::chrono` is a **C++11 library** for measuring time. You’ll use it to calculate how long each addition method takes.
+
+---
+
+### CUDA Kernel Function
+
+```cpp
+__global__ void add(int* A, int* B, int* C, int size) {
+```
+
+* `__global__` — Tells the compiler that this is a **GPU kernel function**, which will be **executed on the GPU**.
+* It is called from CPU, but runs in **parallel on many GPU threads**.
+* It accepts:
+
+  * `A`, `B`: Input vectors on GPU memory.
+  * `C`: Output vector on GPU memory.
+  * `size`: Total number of elements in the vectors.
+
+---
+
+```cpp
+int tid = blockIdx.x * blockDim.x + threadIdx.x;
+```
+
+* Each thread gets a **unique ID** called `tid` (thread ID).
+* `blockIdx.x`: ID of the block (in the grid).
+* `blockDim.x`: Number of threads per block.
+* `threadIdx.x`: ID of the thread (within its block).
+* This formula gives a **unique index** across all threads.
+
+---
+
+```cpp
+if (tid < size) {
+    C[tid] = A[tid] + B[tid];
+}
+```
+
+* Each thread adds `A[tid] + B[tid]` and stores it in `C[tid]`.
+* The `if` check ensures that **no thread goes out of bounds** (important when size isn’t a multiple of block size).
+
+---
+
+### Input Initialization (CPU)
+
+```cpp
+void initialize(int* vector, int size) {
+    for (int i = 0; i < size; i++) {
+        cout << "Enter element " << i + 1 << " of the vector: ";
+        cin >> vector[i];
+    }
+}
+```
+
+* Takes input from the user for each element in a vector.
+
+---
+
+### Print Function
+
+```cpp
+void print(int* vector, int size) {
+    for (int i = 0; i < size; i++) {
+        cout << vector[i] << " ";
+    }
+    cout << endl;
+}
+```
+
+* Prints all the elements of a vector.
+
+---
+
+### Sequential Addition (CPU only)
+
+```cpp
+void sequentialAddition(int* A, int* B, int* C, int size) {
+    for (int i = 0; i < size; i++) {
+        C[i] = A[i] + B[i];
+    }
+}
+```
+
+* Performs vector addition using normal **single-threaded** C++ logic.
+
+---
+
+### Main Function
+
+```cpp
+int main() {
+```
+
+* The program starts executing here.
+
+---
+
+```cpp
+int N;
+cout << "Enter the size of the vectors: ";
+cin >> N;
+```
+
+* Ask the user for number of elements in each vector.
+
+---
+
+### Host Memory Allocation (CPU)
+
+```cpp
+int* A, * B, * C;
+
+int vectorSize = N;
+size_t vectorBytes = vectorSize * sizeof(int);
+```
+
+* `A`, `B`, `C`: Vectors stored on **host/CPU**.
+* `vectorBytes`: Total memory (in bytes) needed per vector.
+
+---
+
+```cpp
+A = new int[vectorSize];
+B = new int[vectorSize];
+C = new int[vectorSize];
+```
+
+* Dynamically allocates arrays on host (heap memory).
+
+---
+
+```cpp
+initialize(A, vectorSize);
+initialize(B, vectorSize);
+```
+
+* Fills vectors A and B with user input.
+
+---
+
+```cpp
+cout << "Vector A: ";
+print(A, N);
+cout << "Vector B: ";
+print(B, N);
+```
+
+* Prints both input vectors.
+
+---
+
+### Device Memory Allocation (GPU)
+
+```cpp
+int* X, * Y, * Z;
+cudaMalloc(&X, vectorBytes);
+cudaMalloc(&Y, vectorBytes);
+cudaMalloc(&Z, vectorBytes);
+```
+
+* Allocates memory on the **GPU** for input and output vectors.
+* `cudaMalloc(&X, vectorBytes)` → allocates space for X on GPU.
+
+---
+
+### Data Transfer: CPU to GPU
+
+```cpp
+cudaMemcpy(X, A, vectorBytes, cudaMemcpyHostToDevice);
+cudaMemcpy(Y, B, vectorBytes, cudaMemcpyHostToDevice);
+```
+
+* Copies data from **CPU arrays** A and B to **GPU arrays** X and Y.
+
+---
+
+### CUDA Kernel Configuration
+
+```cpp
+int threadsPerBlock = 256;
+int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+```
+
+* You need to decide how many threads and blocks will run on the GPU.
+* This setup makes sure **every element is handled by one thread**.
+
+---
+
+### Sequential Addition (CPU timing)
+
+```cpp
+auto start = high_resolution_clock::now();
+sequentialAddition(A, B, C, N);
+auto stop = high_resolution_clock::now();
+auto seq_duration = duration_cast<microseconds>(stop - start);
+```
+
+* Measure how long the **CPU-only addition** takes.
+
+---
+
+```cpp
+cout << "Sequential Addition: ";
+print(C, N);
+```
+
+* Print result of CPU-based addition.
+
+---
+
+### Parallel Addition (GPU timing)
+
+```cpp
+start = high_resolution_clock::now();
+add<<<blocksPerGrid, threadsPerBlock>>>(X, Y, Z, N);
+cudaDeviceSynchronize();
+cudaMemcpy(C, Z, vectorBytes, cudaMemcpyDeviceToHost);
+stop = high_resolution_clock::now();
+auto par_duration = duration_cast<microseconds>(stop - start);
+```
+
+* `add<<<...>>>` → Launches CUDA kernel. Runs `add()` in **parallel on GPU**.
+* `cudaDeviceSynchronize()` → Waits for kernel to finish.
+* `cudaMemcpy(C, Z, ...)` → Copy result back from GPU to CPU.
+
+---
+
+```cpp
+cout << "Parallel Addition: ";
+print(C, N);
+```
+
+* Print the result from GPU-based addition.
+
+---
+
+### Time Comparison
+
+```cpp
+cout << "Sequential Addition Time: " << seq_duration.count() << " microseconds" << endl;
+cout << "Parallel Addition Time: " << par_duration.count() << " microseconds" << endl;
+```
+
+* Shows how long each method took.
+* You'll likely see **GPU is faster** for large vector sizes.
+
+---
+
+### Cleanup
+
+```cpp
+delete[] A;
+delete[] B;
+delete[] C;
+
+cudaFree(X);
+cudaFree(Y);
+cudaFree(Z);
+```
+
+* Deallocates memory from CPU and GPU.
+
+---
+
+```cpp
+return 0;
+```
+
+* End of program.
+
+---
+
+## 🔁 Summary of CUDA Functions Used
+
+| CUDA Function           | Description                           |
+| ----------------------- | ------------------------------------- |
+| `__global__`            | Declares a GPU kernel function        |
+| `cudaMalloc`            | Allocates memory on the GPU           |
+| `cudaMemcpy`            | Copies memory between host and device |
+| `cudaFree`              | Frees memory on the GPU               |
+| `cudaDeviceSynchronize` | Waits for all GPU tasks to finish     |
+
+---
+
+## ✅ Learning Outcomes
+
+From this code, you:
+
+* Learned how to write a simple CUDA program.
+* Understood parallelism: **breaking big task into sub-tasks**.
+* Compared CPU and GPU performance.
+* Used memory transfers between CPU ↔ GPU.
+
+Would you like me to explain **matrix multiplication in CUDA** next or help you write the journal format for this assignment?

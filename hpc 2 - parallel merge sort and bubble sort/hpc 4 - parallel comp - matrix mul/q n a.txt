@@ -1,0 +1,230 @@
+Here are some **potential viva or interview questions** based on your CUDA assignment (vector addition and matrix multiplication), along with **answers** explained in a simple and beginner-friendly manner.
+
+---
+
+### 🔹 **Basic Understanding Questions**
+
+---
+
+#### 1. **What is CUDA?**
+
+**Answer:**
+CUDA (Compute Unified Device Architecture) is a parallel computing platform and API created by NVIDIA. It allows developers to use NVIDIA GPUs to run general-purpose programs, written in C, C++, or Python.
+
+---
+
+#### 2. **Why do we use CUDA?**
+
+**Answer:**
+CUDA helps in **parallelizing tasks** that can be divided into independent sub-tasks, like matrix operations or vector addition. This **increases speed** by running tasks on many GPU cores simultaneously, rather than one-by-one on a CPU.
+
+---
+
+#### 3. **What is the difference between CPU and GPU in context of this code?**
+
+**Answer:**
+
+* **CPU (Central Processing Unit):** Good at handling a few complex tasks quickly.
+* **GPU (Graphics Processing Unit):** Good at handling many simple tasks at the same time.
+  In this assignment, we use the GPU to add vectors in **parallel**, making it faster for large datasets.
+
+---
+
+#### 4. **What is a kernel function in CUDA?**
+
+**Answer:**
+A kernel function is a function written in CUDA C/C++ that runs on the **GPU**. It is launched from the host (CPU) and executed by many threads in parallel on the device (GPU).
+
+In your code:
+
+```cpp
+__global__ void add(int* A, int* B, int* C, int size)
+```
+
+`__global__` tells the compiler this function should run on the **GPU**.
+
+---
+
+#### 5. **What does `__global__` mean?**
+
+**Answer:**
+It's a CUDA keyword that marks a function as a **kernel**.
+
+* It is called from **host (CPU)**.
+* It runs on **device (GPU)**.
+
+---
+
+### 🔹 **Memory & Data Handling Questions**
+
+---
+
+#### 6. **What are the different types of memory in CUDA?**
+
+**Answer:**
+
+1. **Host memory:** Regular RAM on CPU.
+2. **Device memory:** GPU memory.
+3. **Shared memory:** Fast memory shared among threads of the same block.
+4. **Global memory:** Main GPU memory accessible to all threads.
+5. **Local memory:** Private to each thread.
+
+In your code, `cudaMalloc`, `cudaMemcpy` deal with **global memory**.
+
+---
+
+#### 7. **What does `cudaMalloc` do?**
+
+**Answer:**
+`cudaMalloc()` allocates memory on the **GPU (device)**.
+
+Example:
+
+```cpp
+cudaMalloc(&X, vectorBytes);
+```
+
+This allocates memory for array `X` on the GPU.
+
+---
+
+#### 8. **What is `cudaMemcpy` used for?**
+
+**Answer:**
+`cudaMemcpy()` is used to **copy data between host and device** memory.
+
+```cpp
+cudaMemcpy(X, A, vectorBytes, cudaMemcpyHostToDevice);
+```
+
+This copies data from CPU array `A` to GPU array `X`.
+
+---
+
+#### 9. **What is the purpose of `cudaDeviceSynchronize()`?**
+
+**Answer:**
+It **waits for all GPU threads to finish** their work before continuing.
+This ensures your program doesn't copy results back before the GPU is done computing.
+
+---
+
+#### 10. **What are threads and blocks in CUDA?**
+
+**Answer:**
+
+* **Thread:** Smallest unit of execution in CUDA.
+* **Block:** Group of threads.
+* **Grid:** Group of blocks.
+
+In your code:
+
+```cpp
+int threadsPerBlock = 256;
+int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+```
+
+This means: Divide the work into blocks of 256 threads.
+
+---
+
+#### 11. **Why do we calculate `blockIdx.x * blockDim.x + threadIdx.x`?**
+
+**Answer:**
+This gives a **unique thread index (`tid`)** for each thread.
+It helps us assign each thread to a specific element in the array.
+
+---
+
+### 🔹 **Code-Specific Questions**
+
+---
+
+#### 12. **Why do we compare `if (tid < size)` inside the kernel?**
+
+**Answer:**
+To avoid **accessing memory out of bounds**.
+Sometimes, the number of threads is more than elements (because of rounding), so we check this condition.
+
+---
+
+#### 13. **Why is sequential addition included in the code?**
+
+**Answer:**
+To **compare performance** of CPU vs GPU.
+It helps understand how parallel execution is faster than sequential.
+
+---
+
+#### 14. **What is `high_resolution_clock::now()` used for?**
+
+**Answer:**
+It measures **execution time** of code blocks.
+It helps in benchmarking how fast sequential vs parallel execution is.
+
+---
+
+#### 15. **How does GPU addition work in this program?**
+
+**Answer:**
+
+* Arrays A and B are copied to the GPU.
+* Each thread adds one pair of elements (A\[i] + B\[i]).
+* The result is stored in array C on GPU.
+* Result is copied back to CPU memory.
+
+---
+
+#### 16. **What happens if vector size is very small (like N = 3)?**
+
+**Answer:**
+The overhead of copying data and launching GPU threads may make it **slower** than CPU for small sizes.
+GPU is useful mainly for **large data sets**.
+
+---
+
+#### 17. **What is the use of `delete[]` and `cudaFree()`?**
+
+**Answer:**
+
+* `delete[]` frees memory allocated on the **host** (CPU).
+* `cudaFree()` frees memory on the **device** (GPU).
+
+It prevents memory leaks.
+
+---
+
+#### 18. **Can we launch more than 1 kernel?**
+
+**Answer:**
+Yes. You can launch multiple kernel functions if you have different computations. For example, one for vector addition, another for matrix multiplication.
+
+---
+
+### 🔹 **Matrix Multiplication (Future Part of Assignment)**
+
+---
+
+#### 19. **How is matrix multiplication done in parallel?**
+
+**Answer:**
+Each thread calculates **one element** of the result matrix.
+You use **2D blocks and threads** to map to matrix rows and columns.
+
+---
+
+#### 20. **Why do we need thread and block dimensions for matrices?**
+
+**Answer:**
+Because matrices are 2D, we use:
+
+```cpp
+dim3 threadsPerBlock(16, 16);
+dim3 blocksPerGrid((N+15)/16, (N+15)/16);
+```
+
+Each thread computes one cell in the output matrix.
+
+---
+
+Would you like me to prepare answers for matrix multiplication code too when you write it?

@@ -1,0 +1,100 @@
+Here are some **potential viva or interview questions** based on your project *“Linear Regression using Deep Neural Network on Boston Housing Dataset”*, along with **answers** tailored for a beginner:
+
+---
+
+### 🔹 1. **What is Linear Regression?**
+
+**Answer:**
+Linear Regression is a supervised learning algorithm used to predict a continuous output variable based on one or more input features. It tries to find the best-fitting straight line (in simple regression) that minimizes the difference between actual and predicted values.
+
+---
+
+### 🔹 2. **What is the Boston Housing Dataset?**
+
+**Answer:**
+It’s a classic dataset in machine learning that contains information about housing in Boston suburbs. It includes 13 input features like crime rate, number of rooms, and property tax rate, and one target variable: **median value of owner-occupied homes in \$1000s**.
+
+---
+
+### 🔹 3. **Why did you use a Deep Neural Network for Linear Regression?**
+
+**Answer:**
+Even though linear regression can be done with simple models, using a neural network allows us to:
+
+* Learn complex relationships if needed,
+* Demonstrate how DNNs can mimic linear models by using linear activation (or no activation),
+* Gain experience with Keras and deep learning frameworks.
+
+---
+
+### 🔹 4. **What does `model.compile(loss='mean_squared_error', optimizer='adam')` do?**
+
+**Answer:**
+
+* `loss='mean_squared_error'`: The model tries to minimize the MSE, which measures how far the predictions are from actual values.
+* `optimizer='adam'`: Adam is an optimization algorithm that adjusts weights during training for faster and better convergence.
+
+---
+
+### 🔹 5. **What does `StandardScaler()` do? Why do we use it?**
+
+**Answer:**
+`StandardScaler` standardizes the data by removing the mean and scaling to unit variance. It helps the neural network train faster and more accurately by ensuring all features contribute equally.
+
+---
+
+### 🔹 6. **How do you evaluate the model’s performance?**
+
+**Answer:**
+We use:
+
+* **R² Score (coefficient of determination)**: Tells how well the predictions approximate actual data.
+* **Root Mean Squared Error (RMSE)**: Measures the average magnitude of the prediction error in the same unit as the output.
+
+---
+
+### 🔹 7. **What is the difference between training and testing data?**
+
+**Answer:**
+
+* **Training data** is used to teach the model.
+* **Testing data** is used to check how well the model has learned and to evaluate its generalization ability on unseen data.
+
+---
+
+### 🔹 8. **What are the layers and neurons in your model?**
+
+**Answer:**
+
+* I used a **Sequential model** with:
+
+  * 1st Dense layer: 128 neurons, ReLU activation
+  * 2nd Dense layer: 64 neurons, ReLU activation
+  * Output layer: 1 neuron, no activation (for regression)
+
+---
+
+### 🔹 9. **What activation function did you use? Why ReLU?**
+
+**Answer:**
+I used **ReLU (Rectified Linear Unit)** because:
+
+* It performs well in hidden layers,
+* It helps avoid vanishing gradient problems,
+* It introduces non-linearity while being computationally efficient.
+
+---
+
+### 🔹 10. **Can you suggest a way to improve your model?**
+
+**Answer:**
+Yes, improvements can include:
+
+* Trying more hidden layers or neurons,
+* Tuning hyperparameters like batch size or learning rate,
+* Using **early stopping** or **cross-validation**,
+* Trying different feature engineering techniques.
+
+---
+
+Would you like these formatted into a **printable question-answer sheet** or journal appendix?

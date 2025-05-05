@@ -1,0 +1,55 @@
+Here are **potential interview or exam-style questions** and their **answers** based on the code you provided from cells 12 to 15:
+
+---
+
+### ✅ **GENERAL PYTHON & LOGIC**
+
+**Q1: What is the purpose of the `predict_points()` function?**
+**A:** It maps a player's `runs` to a numeric point scale (2, 4, 6, or 8) based on defined performance brackets.
+
+**Q2: What output will `predict_category(4)` return?**
+**A:** `'Average'`, since 4 lies within the 3–4 range.
+
+---
+
+### ✅ **PANDAS / DATAFRAME OPERATIONS**
+
+**Q3: What does the `.apply()` function do in `df['Runs'].apply(predict_points)`?**
+**A:** It applies the `predict_points` function to each row value in the `Runs` column, returning a new Series.
+
+**Q4: What is the result of this code: `df['Category'].astype('category').cat.codes`?**
+**A:** It converts the `'Category'` column from string labels to numerical codes suitable for machine learning models.
+
+---
+
+### ✅ **MACHINE LEARNING / MODEL TRAINING**
+
+**Q5: Why is `train_test_split` used before model training?**
+**A:** To split the data into training and testing sets so the model can be evaluated on unseen data, ensuring generalization.
+
+**Q6: Why use `RandomForestClassifier` instead of a single decision tree?**
+**A:** Random Forest is an ensemble method that combines multiple decision trees to reduce overfitting and improve prediction accuracy.
+
+**Q7: What does `model.feature_importances_` return?**
+**A:** An array of importance scores that shows how much each feature contributed to the final model prediction.
+
+---
+
+### ✅ **VISUALIZATION**
+
+**Q8: What does the bar plot in Cell 15 illustrate?**
+**A:** The relative importance of each feature in predicting the target category using the trained Random Forest model.
+
+---
+
+### ✅ **METRICS & EVALUATION**
+
+**Q9: What does the `classification_report()` show?**
+**A:** It provides precision, recall, F1-score, and support for each class in the target variable, giving a detailed view of model performance.
+
+**Q10: If the model accuracy is high but the F1-score is low for one class, what might that indicate?**
+**A:** Class imbalance or poor model performance on that specific class — accuracy alone might be misleading.
+
+---
+
+Would you like these compiled as a printable cheat sheet or want more advanced questions too?
