@@ -1,0 +1,156 @@
+Here are **potential questions and answers** related to your assignment on **Fashion MNIST classification using CNN**. These cover concepts, code, and deep learning basics, designed for a viva or written explanation.
+
+---
+
+### 🧠 **Theory and Conceptual Questions**
+
+#### 1. **What is a Convolutional Neural Network (CNN)?**
+
+**Answer:**
+A CNN is a deep learning algorithm that takes in an image, assigns learnable weights and biases to various features, and is able to differentiate one from the other. It uses layers like convolution, pooling, and fully connected layers to extract features and classify images.
+
+---
+
+#### 2. **Why is CNN used instead of regular neural networks (ANN) for image classification?**
+
+**Answer:**
+CNNs are more efficient because they consider spatial relationships between pixels. They also require fewer parameters due to shared weights and local connectivity, unlike ANNs which fully connect every neuron to every other neuron.
+
+---
+
+#### 3. **What is the role of the convolution layer?**
+
+**Answer:**
+The convolution layer applies filters to the input image to extract important features such as edges, textures, or patterns.
+
+---
+
+#### 4. **What does the pooling layer do?**
+
+**Answer:**
+Pooling layers reduce the spatial size of the feature maps, which helps in reducing computation, memory usage, and controlling overfitting. Max pooling is commonly used, which selects the maximum value in each region.
+
+---
+
+#### 5. **What is ReLU activation and why is it used?**
+
+**Answer:**
+ReLU (Rectified Linear Unit) introduces non-linearity into the model by converting all negative pixel values to zero. This helps the network learn complex patterns.
+
+---
+
+#### 6. **What is the purpose of dropout in a CNN model?**
+
+**Answer:**
+Dropout randomly "drops" a number of neurons during training to prevent overfitting and make the model more robust.
+
+---
+
+#### 7. **What is overfitting and how do you handle it?**
+
+**Answer:**
+Overfitting occurs when the model performs well on training data but poorly on unseen data. It can be controlled using dropout, early stopping, regularization, or using more training data.
+
+---
+
+#### 8. **What is softmax activation used for in the output layer?**
+
+**Answer:**
+Softmax converts raw prediction scores into probabilities, ensuring all outputs add up to 1. It is used for multi-class classification problems.
+
+---
+
+#### 9. **Explain the loss function used: sparse\_categorical\_crossentropy.**
+
+**Answer:**
+It is used when target labels are integers (not one-hot encoded). It measures the difference between the true label and predicted probability distribution.
+
+---
+
+#### 10. **Why did we normalize the pixel values (divide by 255)?**
+
+**Answer:**
+Normalization brings all pixel values to the range \[0,1], which helps the neural network converge faster and more accurately during training.
+
+---
+
+### 🧪 **Practical/Code-Based Questions**
+
+#### 11. **How is the data loaded in this assignment?**
+
+**Answer:**
+Data is loaded from CSV files using `pandas.read_csv()`. Each row represents a flattened 28x28 image with pixel values, and a corresponding label.
+
+---
+
+#### 12. **How are the images reshaped before training?**
+
+**Answer:**
+They are reshaped to (28, 28, 1) so that the CNN can process them as 2D grayscale images with one channel.
+
+---
+
+#### 13. **What is the significance of train-test split and validation set?**
+
+**Answer:**
+
+* **Training set**: Used to train the model.
+* **Validation set**: Used to tune model parameters.
+* **Test set**: Used to evaluate the final performance.
+
+---
+
+#### 14. **What does model.summary() show?**
+
+**Answer:**
+It displays the structure of the CNN, including each layer, the number of parameters, and the output shape at each step.
+
+---
+
+#### 15. **How is the model evaluated?**
+
+**Answer:**
+Using `model.evaluate()`, which returns the loss and accuracy on the test set.
+
+---
+
+#### 16. **What is the confusion matrix and what does it show?**
+
+**Answer:**
+It is a matrix that shows the number of correct and incorrect predictions for each class. It helps visualize misclassifications.
+
+---
+
+#### 17. **What is the classification report?**
+
+**Answer:**
+It provides metrics like precision, recall, and F1-score for each class, helping to understand per-class performance.
+
+---
+
+#### 18. **What is the difference between `argmax()` and `predict()`?**
+
+**Answer:**
+
+* `predict()` returns the probability scores for all classes.
+* `argmax()` returns the index (class label) with the highest probability.
+
+---
+
+### 📘 **Review/Reflection Questions**
+
+#### 19. **What challenges did you face during this assignment?**
+
+**Sample Answer:**
+Understanding CNN architecture and reshaping image data were challenging. Also, learning how dropout and validation sets prevent overfitting was new but important.
+
+---
+
+#### 20. **What did you learn from this project?**
+
+**Sample Answer:**
+I learned how CNNs work, how to process image data, train a model, and evaluate it using real datasets. I also gained experience in data visualization and understanding model performance through confusion matrices and accuracy plots.
+
+---
+
+Would you like these compiled into a formatted PDF or Word document for easier study or submission?
