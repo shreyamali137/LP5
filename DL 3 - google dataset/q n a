@@ -1,0 +1,121 @@
+Here are **potential questions and answers** that could be asked in a **viva**, **journal review**, or **examination** based on your Google stock price prediction assignment using RNN and LSTM:
+
+---
+
+## 🔍 **Theory & Conceptual Questions**
+
+### 1. **What is a Recurrent Neural Network (RNN)?**
+
+**Answer**:
+An RNN is a type of neural network designed for sequential data. It maintains a memory of previous inputs through hidden states, allowing it to learn patterns over time. It is especially useful for time series, speech, and natural language processing tasks.
+
+---
+
+### 2. **What is the key difference between RNN and LSTM?**
+
+**Answer**:
+While both are designed for sequential data, LSTM (Long Short-Term Memory) networks are a special kind of RNN capable of learning long-term dependencies. They use gates (input, output, forget) to control the flow of information, which helps solve the **vanishing gradient problem** found in standard RNNs.
+
+---
+
+### 3. **Why do we scale the data using MinMaxScaler?**
+
+**Answer**:
+Neural networks are sensitive to the scale of input data. `MinMaxScaler` normalizes the features between 0 and 1, which helps the model converge faster and improves accuracy by avoiding large weight updates.
+
+---
+
+### 4. **Why do we use the "Close" price as the prediction target?**
+
+**Answer**:
+The "Close" price is commonly used because it reflects the final trading value of the stock for a given day, incorporating all market activities and signals up to that point. It’s the most stable and meaningful single value in a stock’s daily performance.
+
+---
+
+### 5. **What is sequence length and why is it important?**
+
+**Answer**:
+Sequence length (e.g., 10) refers to how many past time steps the model uses to predict the next value. Choosing an appropriate length allows the RNN to capture relevant trends without adding unnecessary complexity.
+
+---
+
+### 6. **What is the function of the LSTM layer in the model?**
+
+**Answer**:
+The LSTM layer processes sequential input and learns patterns over time. It remembers useful information and forgets irrelevant data using its gating mechanisms, making it suitable for predicting stock prices based on past trends.
+
+---
+
+### 7. **What is the loss function used, and why?**
+
+**Answer**:
+The model uses **Mean Squared Error (MSE)** as the loss function because stock price prediction is a **regression** problem. MSE measures the average squared difference between predicted and actual prices.
+
+---
+
+### 8. **What happens during model.fit()?**
+
+**Answer**:
+The `fit()` function trains the model using the training dataset by:
+
+* Forward passing input sequences through the model
+* Calculating the loss (error)
+* Performing backpropagation to adjust weights using the optimizer
+
+---
+
+### 9. **What does the plot at the end show?**
+
+**Answer**:
+It compares the predicted stock prices to the actual stock prices for the test data. A good model will have the predicted curve closely following the actual one, indicating that the RNN has learned the time series trend effectively.
+
+---
+
+### 10. **What are some limitations of RNNs?**
+
+**Answer**:
+
+* Struggle with long sequences (unless using LSTM/GRU)
+* Prone to vanishing/exploding gradients
+* Slower training compared to feedforward networks
+
+---
+
+## 🛠️ **Practical & Code-Based Questions**
+
+### 11. **What does `generate_sequential_data()` do?**
+
+**Answer**:
+This function prepares the data for RNN input by creating sliding windows (sequences of 10 time steps) and assigning the next day's Close price as the label. It returns input (X) and target (y) arrays for training/testing.
+
+---
+
+### 12. **Why do we split the data into training and testing?**
+
+**Answer**:
+To evaluate how well the model generalizes to unseen data. Training teaches the model patterns, while testing checks its accuracy on new data to avoid overfitting.
+
+---
+
+### 13. **What is the purpose of `model.summary()`?**
+
+**Answer**:
+It provides an overview of the model architecture, including layer types, output shapes, and the number of trainable parameters. This is useful for verification and debugging.
+
+---
+
+### 14. **Why do we use `relu` activation in the Dense layers?**
+
+**Answer**:
+`ReLU` (Rectified Linear Unit) helps introduce non-linearity, enabling the network to learn complex relationships. It also reduces the chance of vanishing gradients.
+
+---
+
+### 15. **What is the shape of input to the LSTM layer and why?**
+
+**Answer**:
+The input shape is `(sequence_length, number_of_features)`. For example, (10, 5) if you're using 10 time steps and 5 stock features (Open, High, Low, Close, Volume). LSTM expects a 3D input: `[samples, timesteps, features]`.
+
+---
+
+Would you like a formatted **PDF or notebook file** version of these questions and answers to include in your submission or journal?
